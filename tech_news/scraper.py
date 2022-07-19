@@ -66,8 +66,27 @@ def scrape_novidades(html_content: str) -> list:
 
 
 # Requisito 3
-def scrape_next_page_link(html_content):
-    """Seu código deve vir aqui"""
+def scrape_next_page_link(html_content: str) -> str:
+    """Faz uma raspagem do conteúdo do HTML retornando a URL da próxima página
+
+    Parâmetros:
+    -----------
+    html_content : str
+
+    Retorno:
+    --------
+    str
+        A string da URL da próxima página
+
+    None
+        Quando não encontra nenhuma URL para próxima página
+    """
+    selector = Selector(html_content)
+    SCRAPING_SELECTOR = """
+        nav.pagination
+        div.nav-links
+        a.next ::attr(href)"""
+    return selector.css(SCRAPING_SELECTOR).get()
 
 
 # Requisito 4
