@@ -1,13 +1,13 @@
-import time
+from time import sleep
 from requests import get, HTTPError, ReadTimeout
 
 
 DELAY = 1
-TIMEOUT = 5
+TIMEOUT = 3
 
 
 # Requisito 1
-def fetch(url: str) -> str | None:
+def fetch(url: str):
     """Faz uma requisição a uma URL e retorna o conteúdo do HTML em string
 
     Parâmetros:
@@ -22,7 +22,7 @@ def fetch(url: str) -> str | None:
     None
         Quando não encontrada ou timeout estourado
     """
-    time.sleep(DELAY)
+    sleep(DELAY)
     try:
         response = get(url, timeout=TIMEOUT)
         response.raise_for_status()
