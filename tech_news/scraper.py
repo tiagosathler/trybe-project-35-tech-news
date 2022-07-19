@@ -1,5 +1,6 @@
 from time import sleep
 from requests import get, HTTPError, ReadTimeout
+from parsel import Selector
 
 
 DELAY = 1
@@ -33,8 +34,35 @@ def fetch(url: str):
 
 
 # Requisito 2
-def scrape_novidades(html_content):
-    """Seu código deve vir aqui"""
+def scrape_novidades(html_content: str) -> list:
+    """Faz uma raspagem do conteúdo do HTML retornando uma lista de URLs
+
+    Parâmetros:
+    -----------
+    html_content : str
+
+    Retorno:
+    --------
+    list(str)
+        Uma lista de strings das URLs de notícias encontradas nos cards
+
+    list()
+        Uma lista vazia quando não encontra nenhuma URL de notícias
+    """
+    selector = Selector(html_content)
+    urls = list()
+    articles = selector.css("div.archive-main > article.entry-preview")
+    SCRAPING_SELECTOR = """
+        div.post-inner
+        header.entry-header
+        h2.entry-title
+        a ::attr(href)"""
+
+    for article in articles:
+        url = article.css(SCRAPING_SELECTOR).get()
+        if url:
+            urls.append(url)
+    return urls
 
 
 # Requisito 3
