@@ -89,9 +89,126 @@ def scrape_next_page_link(html_content: str) -> str:
     return selector.css(SCRAPING_SELECTOR).get()
 
 
+def parse_string(string: str) -> str:
+    """Analisa uma string e a retorna sem qualquer tag HTML autocontida
+
+    Parâmetros:
+    -----------
+    string : str
+
+    Retorno:
+    --------
+    new_string : str
+        string sem qualquer tag HTML
+    """
+    new_string = ""
+    skip_char = False
+    for char in string:
+        if char == "<":
+            skip_char = True
+        elif char == ">" and skip_char:
+            skip_char = False
+        elif not skip_char:
+            new_string += char
+    return new_string
+
+
+def parse_number(string: str) -> int:
+    """Analisa uma string e tenta convertê-la em inteiro caso seja possível,
+    do contrário retorna 0
+
+    Parâmetros:
+    -----------
+    string : str
+
+    Retorno:
+    --------
+    inteiro:
+        número inteiro convertido da string;
+        0 se não for um número.
+    """
+    if string and string.isdecimal():
+        return int(string)
+    else:
+        return 0
+
+
 # Requisito 4
-def scrape_noticia(html_content):
-    """Seu código deve vir aqui"""
+def scrape_noticia(html_content: str) -> dict:
+    """Faz uma raspagem do conteúdo do HTML retornando os dados da notícia
+
+    Parâmetros:
+    -----------
+    html_content : str
+
+    Retorno:
+    --------
+    dict
+        Um dicionário com os atributos:
+            url: string da URL da notícia;
+            title: string do título da notícia;
+            timestamp: a data da notícia (dd/mm/yyyy);
+            writer: string do nome do autor;
+            comments_count: int com o número de comentários;
+            summary: o primeiro parágrafo da notícia;
+            tags: lista de strings das tags da notícia;
+            category: string da categoria da notícia.
+    """
+    selector = Selector(html_content)
+    news = dict()
+    SCRAPING_SELECTORS = [
+        {
+            "method": "string",
+            "key": "url",
+            "selector": "head link[rel=canonical] ::attr(href)",
+        },
+        {
+            "method": "string",
+            "key": "title",
+            "selector": "h1.entry-title ::text",
+        },
+        {
+            "method": "string",
+            "key": "timestamp",
+            "selector": "ul.post-meta li.meta-date ::text",
+        },
+        {
+            "method": "string",
+            "key": "writer",
+            "selector": "ul.post-meta li.meta-author span.author a.url ::text",
+        },
+        {
+            "method": "number",
+            "key": "comments_count",
+            "selector": "div.post-comments h5.title-block ::text",
+        },
+        {
+            "method": "string",
+            "key": "summary",
+            "selector": "div.entry-content p",
+        },
+        {
+            "method": "list",
+            "key": "tags",
+            "selector": "section.post-tags ul li a ::text",
+        },
+        {
+            "method": "string",
+            "key": "category",
+            "selector": "div.meta-category a span.label ::text",
+        },
+    ]
+
+    for scraper in SCRAPING_SELECTORS:
+        if scraper["method"] == "string":
+            scraped = selector.css(scraper["selector"]).get()
+            news[scraper["key"]] = parse_string(scraped)
+        elif scraper["method"] == "number":
+            scraped = selector.css(scraper["selector"]).get()
+            news[scraper["key"]] = parse_number(scraped)
+        elif scraper["method"] == "list":
+            news[scraper["key"]] = selector.css(scraper["selector"]).getall()
+    return news
 
 
 # Requisito 5
