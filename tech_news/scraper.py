@@ -91,25 +91,6 @@ def scrape_next_page_link(html_content: str) -> str:
     return selector.css(SCRAPING_SELECTOR).get()
 
 
-def bar(string: str) -> str:
-    """Analisa uma string e a retorna vazio se conter "Bloomberg",
-    caso contrário retorna ela própria
-
-    Parâmetros:
-    -----------
-    string : str
-
-    Retorno:
-    --------
-    str
-        a própria string analisada se não conter "Bloomberg"
-        ou vazia caso contrário
-    """
-    if "Bloomberg" in string:
-        return ""
-    return string
-
-
 def parse_string(string: str) -> str:
     """Analisa uma string e a retorna sem qualquer tag HTML autocontida
 
@@ -123,14 +104,9 @@ def parse_string(string: str) -> str:
         string sem qualquer tag HTML
     """
 
-    # Solução 'foobar' para adaptar-se à uma falha do teste da Trybe
-    # Relatado em 19/07/22
-    # ref: https://trybecourse.slack.com/archives/C027T2VU8U8/p1658272668673229
-    foo = bar(string)
-
     new_string = ""
     skip_char = False
-    for char in foo:
+    for char in string:
         if char == "<":
             skip_char = True
         elif char == ">" and skip_char:
@@ -229,7 +205,7 @@ def scrape_noticia(html_content: str) -> dict:
     for scraper in SCRAPING_SELECTORS:
         if scraper["method"] == "string":
             scraped = selector.css(scraper["selector"]).get()
-            news[scraper["key"]] = parse_string(scraped)
+            news[scraper["key"]] = parse_string(scraped).strip()
         elif scraper["method"] == "number":
             scraped = selector.css(scraper["selector"]).get()
             news[scraper["key"]] = parse_number(scraped)
