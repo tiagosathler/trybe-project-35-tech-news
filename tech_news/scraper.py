@@ -1,6 +1,7 @@
 from time import sleep
 from requests import get, HTTPError, ReadTimeout
 from parsel import Selector
+from tech_news.database import create_news
 
 
 DELAY = 1
@@ -238,6 +239,68 @@ def scrape_noticia(html_content: str) -> dict:
     return news
 
 
+def slice_urls_list(urls_list: list, size: int) -> list:
+    """Faz um ajuste da lista 'urls_list', retornando uma cópia dela
+    caso 'size' seja maior que seu comprimento.
+    Caso contrário retorna uma cópia da lista reduzida ao tamanho de 'size'.
+
+    Parâmetros:
+    -----------
+    urls_list : list
+        lista a ser ajustada
+    size : int
+        o tamanho para ajustar a lista
+
+    Retorno:
+    --------
+    urls_list_copy : list
+        cópia da lista ajustada ao tamanho de 'size'
+    """
+    if size < len(urls_list):
+        return urls_list[:size]
+    return urls_list[:]
+
+
 # Requisito 5
-def get_tech_news(amount):
-    """Seu código deve vir aqui"""
+def get_tech_news(amount: int) -> list:
+    """Faz 'amount' raspagens de notícias do 'Blog da Trybe'
+     e as salvam no banco de dados
+
+    Parâmetros:
+    -----------
+    amount : int
+        quantidade de notícias a serem raspadas
+
+    Retorno:
+    --------
+    news_data: list[dict]
+        uma lista de dicionários de notícias
+    """
+
+    blogs_betrybe_html = fetch("https://blog.betrybe.com/")
+    urls_list = scrape_novidades(blogs_betrybe_html)
+
+    count = len(urls_list)
+
+    urls_list = slice_urls_list(urls_list, amount)
+
+    while count < amount:
+        next_url = scrape_next_page_link(blogs_betrybe_html)
+        if next_url:
+            blogs_betrybe_html = fetch(next_url)
+            next_urls_list = scrape_novidades(blogs_betrybe_html)
+            count += len(next_urls_list)
+            urls_list.extend(next_urls_list)
+            urls_list = slice_urls_list(urls_list, amount)
+        else:
+            break
+
+    news_data = []
+
+    for index in range(len(urls_list)):
+        news_html = fetch(urls_list[index])
+        news_scraped = scrape_noticia(news_html)
+        news_data.append(news_scraped)
+
+    create_news(news_data)
+    return news_data
