@@ -5,6 +5,7 @@ from parsel import Selector
 
 DELAY = 1
 TIMEOUT = 3
+HEADERS = {"user-agent": "Fake user-agent"}
 
 
 # Requisito 1
@@ -25,7 +26,7 @@ def fetch(url: str):
     """
     sleep(DELAY)
     try:
-        response = get(url, timeout=TIMEOUT)
+        response = get(url, timeout=TIMEOUT, headers=HEADERS)
         response.raise_for_status()
     except (HTTPError, ReadTimeout):
         return None
