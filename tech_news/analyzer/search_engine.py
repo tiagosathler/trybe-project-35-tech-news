@@ -70,8 +70,24 @@ def search_by_date(date: str) -> list:
 
 
 # Requisito 8
-def search_by_tag(tag):
-    """Seu código deve vir aqui"""
+def search_by_tag(tag: str) -> list:
+    """Faz uma busca no banco de dados de notícias por 'tag'
+    e retorna uma lista de tuplas contendo o 'título' e 'url' da(s) notícia(s)
+
+    Parâmetros:
+    -----------
+    tag : str
+        String com o nome da TAG
+
+    Retorno:
+    --------
+    news_list : list[tuple]
+        Uma lista com as tuplas de notícias encontradas
+    """
+    regex_expr = re.compile(tag, flags=re.IGNORECASE)
+    news_list = search_news({"tags": {"$elemMatch": {"$regex": regex_expr}}})
+    news_list = tuple_list_converter(news_list)
+    return news_list
 
 
 # Requisito 9
