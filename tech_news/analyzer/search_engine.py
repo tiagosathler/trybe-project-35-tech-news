@@ -39,8 +39,7 @@ def search_by_title(title: str) -> list:
     """
     regex_expr = re.compile(title, flags=re.IGNORECASE)
     news_list = search_news({"title": {"$regex": regex_expr}})
-    if len(news_list):
-        news_list = [(news["title"], news["url"]) for news in news_list]
+    news_list = tuple_list_converter(news_list)
     return news_list
 
 
