@@ -46,7 +46,7 @@ def top_5_news() -> list:
         e desempatando-as pelo título
     """
     news_list = find_news()
-    criteria = (('comments_count', True), ('title', False))
+    criteria = (("comments_count", True), ("title", False))
     news_list = multi_sort(news_list, criteria)
     news_list = tuple_list_converter(news_list)
     if len(news_list) < 5:
@@ -57,4 +57,39 @@ def top_5_news() -> list:
 
 # Requisito 11
 def top_5_categories():
-    """Seu código deve vir aqui"""
+    """Faz uma busca no banco de dados de notícias, calcula as ocorrências
+    de cada categoria e retorna uma lista ordenada de categorias, pelo critério
+    de maior quantidade de ocorrências e desempatando-as pelo nome da
+    categoria. Retorna pelo menos as 5 categorias mais populares
+
+    Parâmetros:
+    -----------
+    None
+
+    Retorno:
+    --------
+    categories_list : list[str]
+        Uma lista de strings com pelo menos as 5 categorias mais populares
+    """
+    news_list = find_news()
+    all_categories_list = [news["category"] for news in news_list]
+
+    categories_dict = dict.fromkeys(all_categories_list, 0)
+
+    for category in categories_dict.keys():
+        categories_dict[category] = all_categories_list.count(category)
+
+    categories_list = [
+        {"category": key, "qtd": value}
+        for key, value in categories_dict.items()
+    ]
+
+    criteria = (("qtd", True), ("category", False))
+    categories_list = multi_sort(categories_list, criteria)
+
+    categories_list = [item["category"] for item in categories_list]
+
+    if len(categories_list) < 5:
+        return categories_list
+    else:
+        return categories_list[0:5]
